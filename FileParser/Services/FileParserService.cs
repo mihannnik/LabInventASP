@@ -14,62 +14,73 @@ namespace FileParser.Services
 		public Task StartAsync(CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
-			return Task.Run(async () =>
+			_ = Loop(ShutDown.Token);
+			return Task.CompletedTask;
+		}
+
+		public Task StopAsync(CancellationToken cancellationToken)
+		{
+			ShutDown.Cancel();
+            return Task.CompletedTask;
+		}
+		public async Task Loop(CancellationToken token)
+		{
+			string folder = Path.GetFullPath("xml");
+			List<Models.DeviceStatus> PrevDeviceStatuses = new List<Models.DeviceStatus>();
+			if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+			while (true)
 			{
-				string folder = Path.GetFullPath("xml");
-				List<Models.DeviceStatus> PrevDeviceStatuses = new List<Models.DeviceStatus>();
-				if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-				while (true)
+				var files = Directory.GetFiles(folder, "*.xml");
+				List<Models.DeviceStatus> DeviceStatuses = new List<Models.DeviceStatus>();
+				List<Task> tasks = new List<Task>();
+				foreach (var file in files)
 				{
-					var files = Directory.GetFiles(folder, "*.xml");
-					List<Models.DeviceStatus> DeviceStatuses = new List<Models.DeviceStatus>();
-					List<Task> tasks = new List<Task>();
-					foreach (var file in files)
+					tasks.Add(Task.Factory.StartNew(() =>
 					{
-                        tasks.Add(Task.Factory.StartNew(() =>
+						try
 						{
 							ReadOnlySpan<char> BaseSpan = File.ReadAllText(file).AsSpan();
 							ReadOnlySpan<char> separator = "</DeviceStatus>".AsSpan();
 							int StartIndex = BaseSpan.IndexOf(separator.Slice(2));
-							ReadOnlySpan<char> Text = BaseSpan.Slice(StartIndex, BaseSpan.IndexOf("</InstrumentStatus>".AsSpan()) - StartIndex-1);
+							ReadOnlySpan<char> Text = BaseSpan.Slice(StartIndex, BaseSpan.IndexOf("</InstrumentStatus>".AsSpan()) - StartIndex - 1);
 
 							Span<Range> ranges = new Range[100];
-							
-							int numberOfSplits = Text.Split(ranges, separator,StringSplitOptions.RemoveEmptyEntries);
+
+							int numberOfSplits = Text.Split(ranges, separator, StringSplitOptions.RemoveEmptyEntries);
 							ReadOnlySpan<char> ModulId = "ModuleCategoryID>".AsSpan();
 
-							for (int i = 0; i < numberOfSplits; i++) 
+							for (int i = 0; i < numberOfSplits; i++)
 							{
 								ReadOnlySpan<char> part = Text[ranges[i]];
 								int PartStartIndex = part.IndexOf(ModulId);
 
-                                DeviceStatuses.Add(new Models.DeviceStatus
+								DeviceStatuses.Add(new Models.DeviceStatus
 								{
 									ModuleCategoryID = part.Slice(PartStartIndex + ModulId.Length, part.LastIndexOf(ModulId) - PartStartIndex - ModulId.Length - 2).ToString(),
 									ModuleState = DeviceStates[Random.Shared.Next(0, 4)]
 								});
 							}
-						}));
-					}
-					await Task.WhenAll(tasks);
-					if (PrevDeviceStatuses.Count > 0)
-					{
-						List<DeviceStatus> dif = PrevDeviceStatuses.Except(DeviceStatuses).ToList();
-						Console.WriteLine($"DeviceID: {dif.First().ModuleCategoryID}, State: {dif.First().ModuleState}");
-                        RabbitMQService.SendMessage(dif);
-                    }
-					PrevDeviceStatuses = DeviceStatuses;
-					Thread.Sleep(1000);
+						}
+						catch (Exception ex)
+						{
+							Console.WriteLine(ex.ToString());
+						}
+					}));
 				}
-			},ShutDown.Token);
-		}
-
-		public Task StopAsync(CancellationToken cancellationToken)
-		{
-			return Task.Run(() =>
-			{
-				ShutDown.CancelAsync();
-			});
+				await Task.WhenAll(tasks);
+				if (PrevDeviceStatuses.Count > 0)
+				{
+					List<DeviceStatus> dif = PrevDeviceStatuses.Except(DeviceStatuses).ToList();
+					Console.WriteLine($"DeviceID: {dif.First().ModuleCategoryID}, State: {dif.First().ModuleState}");
+					RabbitMQService.SendMessage(dif);
+				}
+				else
+				{
+					RabbitMQService.SendMessage(DeviceStatuses);
+				}
+				PrevDeviceStatuses = DeviceStatuses;
+				Thread.Sleep(1000);
+			}
 		}
 		public void Dispose()
 		{

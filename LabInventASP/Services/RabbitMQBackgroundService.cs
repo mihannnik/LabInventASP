@@ -18,18 +18,18 @@ namespace LabInventASP.Services
         private RabbitMQ.Client.IModel _channel;
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public RabbitMQBackgroundService(IServiceScopeFactory serviceScopeFactory)
+        public RabbitMQBackgroundService(IConfiguration configuration, IServiceScopeFactory serviceScopeFactory)
         {
             _serviceScopeFactory = serviceScopeFactory;
             var factory = new ConnectionFactory()
             {
-                HostName = "172.20.147.2",
-                UserName = "rmuser",
-                Password = "rmpassword"
+                HostName = "rabbitmq",
+                UserName = configuration["RabbitMQ:User"],
+                Password = configuration["RabbitMQ:Password"]
             };
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
-            _channel.QueueDeclare(queue: "Devices", durable: false, exclusive: false, autoDelete: false, arguments: null);
+            _channel.QueueDeclare(queue: configuration["RabbitMQ:Queue"], durable: false, exclusive: false, autoDelete: false, arguments: null);
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)

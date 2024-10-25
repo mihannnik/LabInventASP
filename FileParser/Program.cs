@@ -5,7 +5,8 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
+        var builder = WebApplication.CreateBuilder(args);  
+        builder.Configuration.AddCommandLine(args);
 
         builder.Services.AddSingleton<IRabbitMQService, RabbitMQService>();
         builder.Services.AddHostedService<FileParserService>();

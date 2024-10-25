@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LabInventASP", "LabInventASP\LabInventASP.csproj", "{4F125E03-14F8-4F98-A786-B9ED9FD933A8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LabInventASP", "LabInventASP\LabInventASP.csproj", "{4F125E03-14F8-4F98-A786-B9ED9FD933A8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileParser", "FileParser\FileParser.csproj", "{FFF165B9-BF24-4215-A35A-317CFF312DAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileParser", "FileParser\FileParser.csproj", "{FFF165B9-BF24-4215-A35A-317CFF312DAC}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{7CBD72CB-D85B-422D-B502-AAC3E846BF59}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{FFF165B9-BF24-4215-A35A-317CFF312DAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFF165B9-BF24-4215-A35A-317CFF312DAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFF165B9-BF24-4215-A35A-317CFF312DAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CBD72CB-D85B-422D-B502-AAC3E846BF59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CBD72CB-D85B-422D-B502-AAC3E846BF59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CBD72CB-D85B-422D-B502-AAC3E846BF59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CBD72CB-D85B-422D-B502-AAC3E846BF59}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

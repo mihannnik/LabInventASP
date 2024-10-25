@@ -1,0 +1,45 @@
+version: '3.4'
+
+services:
+  rabbitmq:
+    image: rabbitmq:4.0.2-management
+    hostname: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RabbitMQ_Default_User}
+      - RABBITMQ_DEFAULT_PASS=${RabbitMQ_Default_Password}
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log_levels [{connection,error},{default,error}] disk_free_limit 2147483648
+    volumes:
+      - ./RabbitMQ/rabbitmq:/var/lib/rabbitmq/mnesia
+    ports:
+      - 15672:15672
+      - 5672:5672
+    networks:
+      - internal_network
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+  labinventasp:
+    image: ${DOCKER_REGISTRY-}labinventasp
+    build:
+      context: .
+      dockerfile: LabInventASP/Dockerfile
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - Database_DataSource=${Database_DataSource}
+      - RabbitMQ__User=${RabbitMQ_Default_User}
+      - RabbitMQ__Password=${RabbitMQ_Default_Password}
+      - RabbitMQ__Queue=${RabbitMQ_Queue}
+    volumes:
+      - ./Database:/app/Database
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    networks:
+      - internal_network
+networks:
+  internal_network:
+    driver: bridge

@@ -9,6 +9,8 @@
 *.user
 *.userosscache
 *.sln.docstates
+*.env
+RabbitMQ/rabbitmq
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -265,6 +267,7 @@ ServiceFabricBackup/
 *.mdf
 *.ldf
 *.ndf
+*.sqlite
 
 # Business Intelligence projects
 *.rdl.data
@@ -361,5 +364,3 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-
-RabbitMQ/
